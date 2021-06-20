@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
@@ -21,6 +22,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.ListPopupWindow;
@@ -310,8 +312,19 @@ public class MultiImageSelectorFragment extends Fragment {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                if (mTmpFile != null && mTmpFile.exists()) {
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mTmpFile));
+                if (mTmpFile != null && mTmpFile.exists()) {//调起系统拍照
+                    if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){//安卓7.0及以上
+                        // 将文件转换成content://Uri的形式
+                        Uri photoURI = FileProvider.getUriForFile(getActivity(),getActivity().getPackageName() + ".provider", mTmpFile);
+                        System.out.println(getActivity().getPackageName() + ".provider");
+                        // 申请临时访问权限
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        System.out.println(photoURI.getPath());
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                    }else{//安卓6.0及以下
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mTmpFile));
+                    }
                     startActivityForResult(intent, REQUEST_CAMERA);
                 } else {
                     Toast.makeText(getActivity(), R.string.mis_error_image_not_exist, Toast.LENGTH_SHORT).show();
