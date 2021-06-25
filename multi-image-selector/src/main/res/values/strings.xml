@@ -9,7 +9,7 @@
     <string name="mis_tip_take_photo">Take photo</string>
     <string name="mis_error_image_not_exist">Image error</string>
     <string name="mis_error_no_permission">Has no permission</string>
-    <string name="mis_permission_dialog_title">Permission Deny</string>
+    <string name="mis_permission_dialog_title">Need Permission</string>
     <string name="mis_permission_dialog_ok">OK</string>
     <string name="mis_permission_dialog_cancel">CANCEL</string>
     <string name="mis_permission_rationale">Storage read permission is needed to pick files.</string>
