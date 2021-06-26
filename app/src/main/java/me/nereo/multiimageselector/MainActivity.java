@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -48,9 +49,9 @@ public class MainActivity extends AppCompatActivity {
         mChoiceMode.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
-                if(checkedId == R.id.multi){
+                if (checkedId == R.id.multi) {
                     mRequestNum.setEnabled(true);
-                }else{
+                } else {
                     mRequestNum.setEnabled(false);
                     mRequestNum.setText("");
                 }
@@ -71,12 +72,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void pickImage() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN // Permission was added in API Level 16
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE,
-                    getString(R.string.mis_permission_rationale),
-                    REQUEST_STORAGE_READ_ACCESS_PERMISSION);
-        }else {
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE, getString(R.string.mis_permission_rationale), REQUEST_STORAGE_READ_ACCESS_PERMISSION);
+        } else {
             boolean showCamera = mShowCamera.getCheckedRadioButtonId() == R.id.show;
             int maxNum = 9;
 
@@ -100,8 +98,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void requestPermission(final String permission, String rationale, final int requestCode){
-        if(ActivityCompat.shouldShowRequestPermissionRationale(this, permission)){
+    /**
+     * @param permission  权限id
+     * @param rationale   申请权限说明
+     * @param requestCode 申请权限请求id 申请动作回调方法判断用户授权与否
+     */
+    private void requestPermission(final String permission, String rationale, final int requestCode) {
+        /**
+         * shouldShowRequestPermissionRationale()。如果应用之前请求过此权限但用户拒绝了请求，此方法将返回 true。
+         * 注:如果用户在过去拒绝了权限请求，并在权限请求系统对话框中选择了 Don't ask again 选项，此方法将返回 false。*
+         * 如果设备规范禁止应用具有该权限，此方法也会返回 false。
+         * */
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
             new AlertDialog.Builder(this)
                     .setTitle(R.string.mis_permission_dialog_title)
                     .setMessage(rationale)
@@ -113,30 +121,28 @@ public class MainActivity extends AppCompatActivity {
                     })
                     .setNegativeButton(R.string.mis_permission_dialog_cancel, null)
                     .create().show();
-        }else{
-            ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
+        } else {
+            Toast.makeText(this, rationale, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if(requestCode == REQUEST_STORAGE_READ_ACCESS_PERMISSION){
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+        if (requestCode == REQUEST_STORAGE_READ_ACCESS_PERMISSION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 pickImage();
             }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == REQUEST_IMAGE){
-            if(resultCode == RESULT_OK){
+        if (requestCode == REQUEST_IMAGE) {
+            if (resultCode == RESULT_OK) {
                 mSelectPath = data.getStringArrayListExtra(MultiImageSelector.EXTRA_RESULT);
                 StringBuilder sb = new StringBuilder();
-                for(String p: mSelectPath){
+                for (String p : mSelectPath) {
                     sb.append(p);
                     sb.append("\n");
                 }
