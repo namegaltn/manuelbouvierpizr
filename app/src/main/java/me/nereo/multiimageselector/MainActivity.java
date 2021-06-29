@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
                     .create().show();
         } else {
             Toast.makeText(this, rationale, Toast.LENGTH_SHORT).show();
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
         }
     }
 
