@@ -70,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * 调起选择图片功能
+     */
     private void pickImage() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN // Permission was added in API Level 16
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -99,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * 申请权限对话框
      * @param permission  权限id
      * @param rationale   申请权限说明
      * @param requestCode 申请权限请求id 申请动作回调方法判断用户授权与否
