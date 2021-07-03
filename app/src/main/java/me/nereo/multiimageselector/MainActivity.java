@@ -17,7 +17,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -103,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 申请权限对话框
-     * @param permission  权限id
+     * @param permission  权限描述
      * @param rationale   申请权限说明
      * @param requestCode 申请权限请求id 申请动作回调方法判断用户授权与否
      */
@@ -126,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
                     .setNegativeButton(R.string.mis_permission_dialog_cancel, null)
                     .create().show();
         } else {
-            Toast.makeText(this, rationale, Toast.LENGTH_SHORT).show();
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
         }
     }
