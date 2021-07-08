@@ -1,8 +1,11 @@
 package me.nereo.multi_image_selector;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
@@ -48,6 +51,9 @@ public class MultiImageSelectorActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(!checkPermissions()){//没有权限就退出
+            finish();
+        }
         setContentView(R.layout.mis_activity_default);
 
         final Intent intent = getIntent();
@@ -173,5 +179,21 @@ public class MultiImageSelectorActivity extends AppCompatActivity
         if(v==canclebutton){
             finish();
         }
+    }
+
+    /**
+     * 检查所需权限是否都授予
+     * @return 判断结果
+     */
+    private boolean checkPermissions() {
+        String[] permissions = new String[2];
+        permissions[0] = Manifest.permission.READ_EXTERNAL_STORAGE;
+        permissions[1] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+        for (String perm : permissions) {
+            if (ActivityCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
     }
 }
