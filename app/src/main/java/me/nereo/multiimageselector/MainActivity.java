@@ -4,15 +4,14 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
@@ -23,22 +22,24 @@ import java.util.ArrayList;
 import me.nereo.multi_image_selector.MultiImageSelector;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int REQUEST_IMAGE = 2;
-    protected static final int REQUEST_STORAGE_READ_ACCESS_PERMISSION = 101;
-    protected static final int REQUEST_STORAGE_WRITE_ACCESS_PERMISSION = 102;
-
     private TextView mResultText;
     private RadioGroup mChoiceMode, mShowCamera;
     private EditText mRequestNum;
-
     private ArrayList<String> mSelectPath;
+    private View button;
+    private String[] permissions = new String[3];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        permissions[0] = Manifest.permission.READ_EXTERNAL_STORAGE;
+        permissions[1] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+        permissions[2] = Manifest.permission.CAMERA;
 
         mResultText = (TextView) findViewById(R.id.result);
         mChoiceMode = (RadioGroup) findViewById(R.id.choice_mode);
@@ -57,84 +58,121 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        View button = findViewById(R.id.button);
-        if (button != null) {
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    pickImage();
-                }
-            });
-        }
-
+        button = findViewById(R.id.button);
+        button.setOnClickListener(this);
     }
 
     /**
      * 调起选择图片功能
      */
     private void pickImage() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN // Permission was added in API Level 16
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE, getString(R.string.mis_permission_rationale), REQUEST_STORAGE_READ_ACCESS_PERMISSION);
-        } else {
-            boolean showCamera = mShowCamera.getCheckedRadioButtonId() == R.id.show;
-            int maxNum = 9;
+        boolean showCamera = mShowCamera.getCheckedRadioButtonId() == R.id.show;
+        int maxNum = 9;
 
-            if (!TextUtils.isEmpty(mRequestNum.getText())) {
-                try {
-                    maxNum = Integer.valueOf(mRequestNum.getText().toString());
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
+        if (!TextUtils.isEmpty(mRequestNum.getText())) {
+            try {
+                maxNum = Integer.valueOf(mRequestNum.getText().toString());
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
             }
-            MultiImageSelector selector = MultiImageSelector.create();
-            selector.showCamera(showCamera);
-            selector.count(maxNum);
-            if (mChoiceMode.getCheckedRadioButtonId() == R.id.single) {
-                selector.single();
-            } else {
-                selector.multi();
-            }
-            selector.origin(mSelectPath);
-            selector.start(MainActivity.this, REQUEST_IMAGE);
+        }
+        MultiImageSelector selector = MultiImageSelector.create();
+        selector.showCamera(showCamera);
+        selector.count(maxNum);
+        if (mChoiceMode.getCheckedRadioButtonId() == R.id.single) {
+            selector.single();
+        } else {
+            selector.multi();
+        }
+        selector.origin(mSelectPath);
+        selector.start(MainActivity.this, REQUEST_IMAGE);
+    }
+
+
+    @Override   //只要开发者调用了requestPermissions方法,就算用户勾选了"不再提示"框，也会回调本方法
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (checkPermissions(permissions)) {
+            pickImage();
+        } else {
+            showReasonAndRequestAgainIfCouldbe();
         }
     }
 
     /**
-     * 申请权限对话框
-     * @param permission  权限描述
-     * @param rationale   申请权限说明
-     * @param requestCode 申请权限请求id 申请动作回调方法判断用户授权与否
+     * 检查所需权限是否都授予
+     *
+     * @param permissions 权限数组
+     * @return 判断结果
      */
-    private void requestPermission(final String permission, String rationale, final int requestCode) {
-        /**
-         * shouldShowRequestPermissionRationale()。如果应用之前请求过此权限但用户拒绝了请求，此方法将返回 true。
-         * 注:如果用户在过去拒绝了权限请求，并在权限请求系统对话框中选择了 Don't ask again 选项，此方法将返回 false。*
-         * 如果设备规范禁止应用具有该权限，此方法也会返回 false。
-         * */
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.mis_permission_dialog_title)
-                    .setMessage(rationale)
-                    .setPositiveButton(R.string.mis_permission_dialog_ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
-                        }
-                    })
-                    .setNegativeButton(R.string.mis_permission_dialog_cancel, null)
-                    .create().show();
-        } else {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
+    private boolean checkPermissions(String[] permissions) {
+        for (String perm : permissions) {
+            if (ActivityCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
         }
+        return true;
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_STORAGE_READ_ACCESS_PERMISSION) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                pickImage();
-            }
+    /**
+     * 弹出对话框向用户解释为何需要该权限，并尝试再次请求权限
+     * <p>
+     * 注:shouldShowRequestPermissionRationale(Activity activity,String permission)方法
+     * 如果用户已经授予该权限，此方法将返回false。
+     * 如果应用之前请求过此权限但用户拒绝了请求，此方法将返回 true。
+     * 如果用户在过去拒绝了权限请求，并在权限请求系统对话框中选择了 Don't ask again 选项，此方法将返回 false。
+     */
+    private void showReasonAndRequestAgainIfCouldbe() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("需要权限")
+                    .setMessage("该功能需要您授予拍照权限")
+                    .setPositiveButton("同意", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, 0);
+                        }
+                    })
+                    .setNegativeButton("拒绝", null)
+                    .create().show();
+        } else if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA) && ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {//用户拒绝并勾选了“不再提示”框，跳转应用设置界面
+            new AlertDialog.Builder(this)
+                    .setTitle("需要权限")
+                    .setMessage("该功能需要您授予拍照权限,请手动开启权限")
+                    .setPositiveButton("同意", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Uri packageURI = Uri.parse("package:" + getPackageName());
+                            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, packageURI);
+                            startActivity(intent);
+                        }
+                    })
+                    .setNegativeButton("拒绝", null)
+                    .create().show();
+        } else if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("需要权限")
+                    .setMessage("该功能需要读取您的内存卡上的图片")
+                    .setPositiveButton("同意", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+                        }
+                    })
+                    .setNegativeButton("拒绝", null)
+                    .create().show();
+        } else if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE) && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {//用户拒绝并勾选了“不再提示”框，跳转应用设置界面
+            new AlertDialog.Builder(this)
+                    .setTitle("需要权限")
+                    .setMessage("该功能需要读取您的内存卡上的图片,请手动开启权限")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Uri packageURI = Uri.parse("package:" + getPackageName());
+                            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, packageURI);
+                            startActivity(intent);
+                        }
+                    })
+                    .create().show();
         }
     }
 
@@ -155,24 +193,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+    public void onClick(View v) {
+        if (!checkPermissions(permissions)) {
+            ActivityCompat.requestPermissions(MainActivity.this, permissions, 0);
+        } else {
+            pickImage();
         }
-
-        return super.onOptionsItemSelected(item);
     }
 }

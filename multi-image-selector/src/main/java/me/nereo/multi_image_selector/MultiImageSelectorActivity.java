@@ -186,9 +186,10 @@ public class MultiImageSelectorActivity extends AppCompatActivity
      * @return 判断结果
      */
     private boolean checkPermissions() {
-        String[] permissions = new String[2];
+        String[] permissions = new String[3];
         permissions[0] = Manifest.permission.READ_EXTERNAL_STORAGE;
         permissions[1] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+        permissions[3] = Manifest.permission.CAMERA;
         for (String perm : permissions) {
             if (ActivityCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
                 return false;
