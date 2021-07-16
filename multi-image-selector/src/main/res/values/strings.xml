@@ -1,6 +1,5 @@
 <resources>
     <string name="mis_folder_all">All Images</string>
-    <string name="mis_preview">Preview</string>
     <string name="mis_msg_no_camera">No system camera found</string>
     <string name="mis_msg_amount_limit">Select images amount is limit</string>
     <string name="mis_action_done">Done</string>
@@ -11,8 +10,7 @@
     <string name="mis_error_no_permission">Has no permission</string>
     <string name="mis_permission_dialog_title">Need Permission</string>
     <string name="mis_permission_dialog_ok">OK</string>
-    <string name="mis_permission_dialog_cancel">CANCEL</string>
-    <string name="mis_permission_rationale">Storage read permission is needed to pick files.</string>
+    <string name="mis_permission_dialog_cancel">Cancle</string>
     <string name="mis_permission_rationale_write_storage">Storage write permission is needed to save the image.</string>
     <string name="single_choice">Single choice</string>
     <string name="multi_choice">Multi choice</string>
