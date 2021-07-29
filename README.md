@@ -21,7 +21,7 @@ Github上非常强大的仿微信图片选择器，只因作者不再更新了�
         // 选择模式  单张图片模式  imageselector还支持多张选择，需要将已经选择过的图片传过去
         intent.putExtra(MultiImageSelectorActivity.EXTRA_SELECT_MODE, 0);
         //传入已选图片集合   注：要传uri  file://   不是绝对路径
-//            intent.putExtra(MultiImageSelectorActivity.EXTRA_DEFAULT_SELECTED_LIST, photolist);
+        //intent.putExtra(MultiImageSelectorActivity.EXTRA_DEFAULT_SELECTED_LIST, photolist);
         //启动选择图像界面
         startActivityForResult(intent, 999);
     }
