@@ -28,3 +28,7 @@ Github上非常强大的仿微信图片选择器，只因作者不再更新了�
 
 
 update Gradle to 4.1
+
+
+MultiImageSelectorActivity在manifest文件中的launchMode不能设置成singleTask,这会导致在Android 5.0以下版本中，启动者的OnActivityForResult方法被立即实行，从而无法接受到用户所选或拍照的图片地址。
+慎用singleTask模式
